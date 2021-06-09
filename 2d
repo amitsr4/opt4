@@ -1,0 +1,72 @@
+import copy
+
+import numpy as np
+from scipy.sparse import spdiags
+import matplotlib.pyplot as plt
+import numpy.linalg as LA
+import math
+import struct
+from array import array
+from os.path import join
+import os
+import random
+
+
+
+def f(x, mu):
+    x1 = x[0]
+    x2 = x[1]
+    return (x1+x2)**2 - 10*(x1+x2)+ mu/2 *((3*x1+x2-6)**2)+ mu/2 *(max(x1**2 + x2**2 -5, 0)**2) + mu/2* (max(-1*x1, 0)**2)
+
+def gradf(x, mu):
+    x1 = x[0]
+    x2 = x[1]
+    ineq1_x1 = mu * 2*x1*(x1**2 +x2**2 -5) if x1**2 +x2**2 -5 >0 else 0
+    ineq1_x2 = mu * 2*x2*(x1**2 +x2**2 -5) if (x1**2 +x2**2 -5 >0) else 0
+    ineq2_x1 = 1*mu * x1  if -1 * x1>0 else 0
+    ineq2_x2 = 0
+    gradx1 = 2*x1+2*x2-10+3/2*mu *(3*x1 +x2 -6) + ineq1_x1 + ineq2_x1
+    gradx2 = 2*x1+2*x2-10+1/2*mu *(3*x1 +x2 -6) + ineq1_x2 + ineq2_x2
+    return np.asarray([gradx1, gradx2])
+
+def Armijio(x, gradx, d, a, b, c, maxiter, mu):
+    for i in range(maxiter):
+        obj_a = f(x + a*d, mu)
+        if obj_a < (f(x, mu) + c*a*np.inner(gradx,d)):
+            return a
+        else:
+            a = b*a
+    return a
+
+
+def gradient_descent( x, maxIter, a0, beta, c, epsilon, mu):
+    f_values = [f(x, mu)]
+    x1_k = [x[0]]
+    x2_k = [x[1]]
+    for i in range(maxIter):
+        grad = gradf(x, mu)
+        d = -grad
+        alpha = Armijio(x, grad, d, a0, beta, c, 100, mu)
+        x = x + alpha * d
+        x1_k.append(x[0])
+        x2_k.append(x[1])
+        f_values.append(f(x, mu))
+        if LA.norm(x - f_values[i - 1]) / LA.norm(x) < epsilon:
+            break
+    return x, f_values, x1_k, x2_k
+
+alpha = 0.25
+beta = 0.5
+c = 1e-4
+epsilon = 0.001
+x0 = np.asarray([0,0])
+mu = 100
+xstar, f_val, x1_k, x2_k = gradient_descent(x0,50, alpha, beta, c, epsilon, mu)
+print(xstar)
+
+# plt.figure()
+# plt.contour([x1_k,x2_k],f_val, label = "mu = " + str(mu))
+# plt.xlabel("x1")
+# plt.ylabel("x2")
+# plt.legend()
+# plt.show()
