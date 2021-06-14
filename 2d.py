@@ -1,15 +1,8 @@
 import copy
 
 import numpy as np
-from scipy.sparse import spdiags
 import matplotlib.pyplot as plt
 import numpy.linalg as LA
-import math
-import struct
-from array import array
-from os.path import join
-import os
-import random
 
 
 
@@ -25,8 +18,8 @@ def gradf(x, mu):
     ineq1_x2 = mu * 2*x2*(x1**2 +x2**2 -5) if (x1**2 +x2**2 -5 >0) else 0
     ineq2_x1 = 1*mu * x1  if -1 * x1>0 else 0
     ineq2_x2 = 0
-    gradx1 = 2*x1+2*x2-10+3/2*mu *(3*x1 +x2 -6) + ineq1_x1 + ineq2_x1
-    gradx2 = 2*x1+2*x2-10+1/2*mu *(3*x1 +x2 -6) + ineq1_x2 + ineq2_x2
+    gradx1 = 2*x1+2*x2-10+3*mu *(3*x1 +x2 -6) + ineq1_x1 + ineq2_x1
+    gradx2 = 2*x1+2*x2-10+mu *(3*x1 +x2 -6) + ineq1_x2 + ineq2_x2
     return np.asarray([gradx1, gradx2])
 
 def Armijio(x, gradx, d, a, b, c, maxiter, mu):
@@ -39,8 +32,8 @@ def Armijio(x, gradx, d, a, b, c, maxiter, mu):
     return a
 
 
-def gradient_descent( x, maxIter, a0, beta, c, epsilon, mu):
-    f_values = [f(x, mu)]
+def gradient_descent( x, maxIter, a0, beta, c, epsilon, mu, f_val):
+    f_val.append(f(x, mu))
     x1_k = [x[0]]
     x2_k = [x[1]]
     for i in range(maxIter):
@@ -50,23 +43,36 @@ def gradient_descent( x, maxIter, a0, beta, c, epsilon, mu):
         x = x + alpha * d
         x1_k.append(x[0])
         x2_k.append(x[1])
-        f_values.append(f(x, mu))
-        if LA.norm(x - f_values[i - 1]) / LA.norm(x) < epsilon:
+        f_val.append(f(x, mu))
+        if LA.norm(x - f_val[i - 1]) / LA.norm(x) < epsilon:
             break
-    return x, f_values, x1_k, x2_k
+    return x, f_val, x1_k, x2_k
 
 alpha = 0.25
 beta = 0.5
 c = 1e-4
-epsilon = 0.001
-x0 = np.asarray([0,0])
-mu = 100
-xstar, f_val, x1_k, x2_k = gradient_descent(x0,50, alpha, beta, c, epsilon, mu)
-print(xstar)
+epsilon = 0.01
 
-# plt.figure()
-# plt.contour([x1_k,x2_k],f_val, label = "mu = " + str(mu))
-# plt.xlabel("x1")
-# plt.ylabel("x2")
-# plt.legend()
-# plt.show()
+fxStar = np.asarray([1.242, 1.72])
+mu = [0.01,0.1,1,10,100]
+x = np.asarray([0,0])
+f_val =[]
+for i in range(5):
+    x, f_val, x1_k, x2_k = gradient_descent(x, 50, alpha, beta, c, epsilon, mu[i], f_val)
+    print(x)
+
+f_norms = [LA.norm(fx - fxStar) for fx in f_val]
+
+plt.figure()
+plt.plot(np.arange(len(f_val)),f_val)
+plt.xlabel("iterations")
+plt.ylabel(r'$f(x_k)$')
+plt.title("function values")
+plt.show()
+
+plt.figure()
+plt.plot(np.arange(len(f_val)),f_norms)
+plt.xlabel("iterations")
+plt.show()
+
+
