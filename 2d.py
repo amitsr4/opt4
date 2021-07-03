@@ -34,19 +34,22 @@ def Armijio(x, gradx, d, a, b, c, maxiter, mu):
 
 def gradient_descent( x, maxIter, a0, beta, c, epsilon, mu, f_val):
     f_val.append(f(x, mu))
-    x1_k = [x[0]]
-    x2_k = [x[1]]
+    # x1_k = [x[0]]
+    # x2_k = [x[1]]
+    x_k = [x]
     for i in range(maxIter):
+        xprev = x
         grad = gradf(x, mu)
         d = -grad
         alpha = Armijio(x, grad, d, a0, beta, c, 100, mu)
         x = x + alpha * d
-        x1_k.append(x[0])
-        x2_k.append(x[1])
+        # x1_k.append(x[0])
+        # x2_k.append(x[1])
+        x_k.append(x)
         f_val.append(f(x, mu))
-        if LA.norm(x - f_val[i - 1]) / LA.norm(x) < epsilon:
+        if i >1 and LA.norm(x - xprev) / LA.norm(xprev) < epsilon:
             break
-    return x, f_val, x1_k, x2_k
+    return x, f_val, x_k
 
 alpha = 0.25
 beta = 0.5
@@ -58,10 +61,10 @@ mu = [0.01,0.1,1,10,100]
 x = np.asarray([0,0])
 f_val =[]
 for i in range(5):
-    x, f_val, x1_k, x2_k = gradient_descent(x, 50, alpha, beta, c, epsilon, mu[i], f_val)
+    x, f_val, x_k = gradient_descent(x, 50, alpha, beta, c, epsilon, mu[i], f_val)
     print(x)
 
-f_norms = [LA.norm(fx - fxStar) for fx in f_val]
+
 
 plt.figure()
 plt.plot(np.arange(len(f_val)),f_val)
@@ -70,9 +73,9 @@ plt.ylabel(r'$f(x_k)$')
 plt.title("function values")
 plt.show()
 
-plt.figure()
-plt.plot(np.arange(len(f_val)),f_norms)
-plt.xlabel("iterations")
-plt.show()
+# plt.figure()
+# plt.plot(np.arange(len(f_norms)),f_norms)
+# plt.xlabel("iterations")
+# plt.show()
 
 

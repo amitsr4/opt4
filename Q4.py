@@ -35,15 +35,15 @@ def gradient_descent(A, C, x, b, lam, maxIter, a0, beta, c, epsilon):
         x = np.clip(x, 0, None)
         x_k.append(C@x)
         f_val.append(f(A,C, x, b, lam))
-        if (i > 0) and (LA.norm(x - xprev) / LA.norm(xprev) < epsilon):
-            break
+        # if (i > 0) and (LA.norm(x - xprev) / LA.norm(xprev) < epsilon):
+        #     break
     return (C@x), f_val, x_k
 
 
 
 x = sp.random(200,1, 0.1).toarray()
 x = np.reshape(x,(200,))
-A = np.random.normal(0,10,size = (100,200))
+A = np.random.normal(0,1,size = (100,200))
 
 
 mu = np.random.normal(0, 0.1,100)
@@ -59,13 +59,13 @@ beta = 0.5
 c = 1e-4
 epsilon = 0.00001
 
-xstar, f, x_k = gradient_descent(A, C, w0, b,50, 2000, alpha, beta, c, epsilon)
+xstar, f_x, x_k = gradient_descent(A, C, w0, b,50, 100, alpha, beta, c, epsilon)
 xnorm = [LA.norm(x-w) for w in x_k]
 print(np.count_nonzero(xstar)/200)
 
 
 plt.figure()
-plt.plot(np.arange(len(f)),f)
+plt.plot(np.arange(len(f_x)),f_x)
 plt.ylabel(r'$f(x_k)$')
 plt.xlabel("iterations")
 plt.title("f")
@@ -78,3 +78,14 @@ plt.ylabel(r'$||x-x_k||_2$')
 plt.title(r'$||x-x^*||_2$')
 plt.show()
 
+nonzero = []
+for i in range(100):
+    xstar, f_x, x_k = gradient_descent(A, C, w0, b,i, 100, alpha, beta, c, epsilon)
+    nonzero.append(np.count_nonzero(xstar)/2)
+
+plt.figure()
+plt.plot(np.arange(len(nonzero)),nonzero)
+plt.xlabel(r'$\lambda$')
+plt.ylabel(r'percentage')
+plt.title(r'non zero entries percentage')
+plt.show()
